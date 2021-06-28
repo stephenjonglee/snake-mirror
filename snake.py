@@ -1,6 +1,8 @@
 import pygame
 import sys
 import pickle
+import os
+from datetime import date
 from wall import Wall
 from food import Food
 from player import Player
@@ -34,9 +36,13 @@ def main():
 
     # clock
     clock = pygame.time.Clock()
+    time = 0
 
     # snake settings
     fps = 25
+
+    # score data
+    data_file = 'data.pkl'
 
     # play loop
     again = True
@@ -44,9 +50,11 @@ def main():
     start_screen(screen, font, color, clock)
     reset_screen(screen, bg)
     while again:
+        start_time = pygame.time.get_ticks()
         score = play(screen, font, score_color, clock, fps)
+        time = pygame.time.get_ticks() - start_time
         reset_screen(screen, bg)
-        again = end_screen(screen, font, color, clock, score)
+        again = end_screen(screen, font, color, clock, score, time, data_file)
         reset_screen(screen, bg)
     close_screen(screen, font, color, clock)
 
@@ -81,8 +89,12 @@ def start_screen(screen, font, color, clock):
         clock.tick(15)
 
 
-def end_screen(screen, font, color, clock, score):
+def end_screen(screen, font, color, clock, score, time, data_file):
     """ Function displays the start up screen """
+    # get scores data
+    scores = read_score(data_file)
+    high_score = max(scores, key=lambda x:x['Score'])
+
     again = True
     running = True
     while running:
@@ -98,11 +110,23 @@ def end_screen(screen, font, color, clock, score):
                 if event.key == pygame.K_n:
                     running = False
                     again = False
-        show_message(screen, "Game Over.", font, color, 200)
-        show_message(screen, f"You're score is {score}.", font, color, 400)
-        show_message(screen, "Try again? (Press y/n).", font, color, 600)
+        show_message(screen, "Game Over.", font, color, 100)
+        show_message(screen, f"You're score is {score}.", font, color, 200)
+        show_message(screen, f"High score: {high_score['Score']}", font, color, 300)
+        if score > high_score['Score']:
+            show_message(screen, f"You beat the high score!", font, color, 400)
+        else:
+            show_message(screen, f"You didn't beat high score...", font, color, 400)
+        show_message(screen, "Try again? (Press y/n).", font, color, 500)
         pygame.display.update()
         clock.tick(15)
+
+    # save score
+    today = date.today()
+    data = {'Date': today, 'Time': time, 'Score': score}
+    scores.append(data)
+    save_score(data_file, scores)
+
     return again
 
 
@@ -162,7 +186,6 @@ def play(screen, font, color, clock, fps):
     food_pos = (int(w / 2) - 10, int(h / 2) - 10)
     food_color = pygame.Color('red')
     score = 0
-    high_score = 0
 
     # Initialize the game
     walls = create_walls(screen)
@@ -244,6 +267,20 @@ def play(screen, font, color, clock, fps):
         clock.tick(fps)
 
     return score
+
+def save_score(data_file, data):
+    with open(data_file, 'wb') as file:
+        pickle.dump(data, file)
+
+def read_score(data_file):
+    if os.path.isfile(data_file):
+        with open(data_file, 'rb') as file:
+            data = pickle.load(file)
+    else:
+        data = [{'Date': 0, 'Time': 0, 'Score': 0}]
+        with open(data_file, 'wb') as file:
+            pickle.dump(data, file)
+    return data
 
 if __name__ == '__main__':
     main()
