@@ -1,8 +1,15 @@
-import pygame
+#!/usr/bin/env python3
+""" Snake on the Next Level Game - Main File """
+
+__author__ = 'Stephen Lee'
+__email__ = 'stephenjonglee@csu.fullerton.edu'
+__maintainer__ = 'stephenjonglee'
+
 import sys
 import pickle
 import os
 from datetime import date
+import pygame
 from wall import Wall
 from food import Food
 from player import Player
@@ -22,8 +29,8 @@ def main():
 
     # display the window
     screen = pygame.display.set_mode(size)
-    bg = pygame.Color('black')
-    screen.fill(bg)
+    background_color = pygame.Color('black')
+    screen.fill(background_color)
 
     # caption title
     title = 'Snake on the Next Level'
@@ -48,17 +55,17 @@ def main():
     again = True
 
     # start screen with rules and controls
-    start_screen(screen, bg, font, color, clock)
+    start_screen(screen, background_color, font, color, clock)
     while again:
         # start time
         start_time = pygame.time.get_ticks()
         # play the snake game
-        score = play(screen, bg, font, score_color, clock, start_time, fps)
+        score = play(screen, background_color, font, score_color, clock, start_time, fps)
         # get the total time played
         time = pygame.time.get_ticks() - start_time
         # end screen prompt to play again
-        again = end_screen(screen, bg, font, color, clock, score, time, data_file)
-    close_screen(screen, bg, font, color, clock)
+        again = end_screen(screen, background_color, font, color, clock, score, time, data_file)
+    close_screen(screen, background_color, font, color, clock)
 
     # quit pygame
     print('exiting')
@@ -66,7 +73,7 @@ def main():
     sys.exit()
 
 
-def start_screen(screen, bg, font, color, clock):
+def start_screen(screen, background_color, font, color, clock):
     """ Function displays the start up screen """
     running = True
     while running:
@@ -77,7 +84,7 @@ def start_screen(screen, bg, font, color, clock):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 running = False
-        screen.fill(bg)
+        screen.fill(background_color)
         show_message(screen, "Rules: Don't eat yourself or hit the wall.", font, color, 200)
         show_message(screen, "You get a point for every 3 seconds", font, color, 245)
         show_message(screen, "or when you eat a food", font, color, 290)
@@ -88,11 +95,11 @@ def start_screen(screen, bg, font, color, clock):
         clock.tick(15)
 
 
-def end_screen(screen, bg, font, color, clock, score, time, data_file):
+def end_screen(screen, background_color, font, color, clock, score, time, data_file):
     """ Function displays the start up screen """
     # get scores data
     scores = read_score(data_file)
-    high_score = max(scores, key=lambda x:x['Score'])
+    high_score = max(scores, key=lambda x: x['Score'])
 
     again = True
     running = True
@@ -109,7 +116,7 @@ def end_screen(screen, bg, font, color, clock, score, time, data_file):
                 if event.key == pygame.K_n:
                     running = False
                     again = False
-        screen.fill(bg)
+        screen.fill(background_color)
         show_message(screen, "Game Over.", font, color, 100)
         show_message(screen, f"You're score is {score}.", font, color, 200)
         show_message(screen, f"High score: {high_score['Score']}", font, color, 300)
@@ -130,7 +137,7 @@ def end_screen(screen, bg, font, color, clock, score, time, data_file):
     return again
 
 
-def close_screen(screen, bg, font, color, clock):
+def close_screen(screen, background_color, font, color, clock):
     """ Function displays the start up screen """
     running = True
     while running:
@@ -141,7 +148,7 @@ def close_screen(screen, bg, font, color, clock):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 running = False
-        screen.fill(bg)
+        screen.fill(background_color)
         show_message(screen, "Thank You for playing!", font, color, 200)
         show_message(screen, "Please come again!", font, color, 400)
         show_message(screen, "Press any key to exit.", font, color, 600)
@@ -149,25 +156,26 @@ def close_screen(screen, bg, font, color, clock):
         clock.tick(15)
 
 
-def show_message(screen, text, font, color, h):
+def show_message(screen, text, font, color, height):
     """ Functions shows the message on screen at center width and desired height """
-    w = screen.get_width()
+    width = screen.get_width()
     text = font.render(text, True, color)
-    text_pos = text.get_rect(center=(w/2, h))
+    text_pos = text.get_rect(center=(width/2, height))
     screen.blit(text, text_pos)
 
 
 def create_walls(screen):
-    (w, h) = screen.get_size()
+    """ Function creates the list of walls """
+    (width, height) = screen.get_size()
     wall_color = pygame.Color('gray')
     cell_size = 10
     buffer = 40
-    """ Draw the wall """
     walls = list()
-    top_wall = Wall(screen, 0, 0 + buffer, w, cell_size, wall_color)
-    bottom_wall = Wall(screen, 0, h - cell_size, w, cell_size, wall_color)
-    left_wall = Wall(screen, 0, 0 + buffer, cell_size, h, wall_color)
-    right_wall = Wall(screen, w - cell_size, 0 + buffer, cell_size, h, wall_color)
+
+    top_wall = Wall(screen, 0, 0 + buffer, width, cell_size, wall_color)
+    bottom_wall = Wall(screen, 0, height - cell_size, width, cell_size, wall_color)
+    left_wall = Wall(screen, 0, 0 + buffer, cell_size, height, wall_color)
+    right_wall = Wall(screen, width - cell_size, 0 + buffer, cell_size, height, wall_color)
 
     walls.append(top_wall)
     walls.append(bottom_wall)
@@ -177,14 +185,14 @@ def create_walls(screen):
     return walls
 
 
-def play(screen, bg, font, color, clock, start_time, fps):
+def play(screen, background_color, font, color, clock, start_time, fps):
     """ Function play the game """
     # Game Settings
     direction = ''
-    (w, h) = screen.get_size()
+    (width, height) = screen.get_size()
     player_pos = (200, 200)
     player_color = pygame.Color('yellow')
-    food_pos = (int(w / 2) - 10, int(h / 2) - 10)
+    food_pos = (int(width / 2) - 10, int(height / 2) - 10)
     food_color = pygame.Color('green')
     score = 0
     interval_start = start_time
@@ -197,12 +205,12 @@ def play(screen, bg, font, color, clock, start_time, fps):
     food = Food(screen, food_pos, food_color)
 
     # Direction of the player
-    dx, dy = 0, 0
+    x_dir, y_dir = 0, 0
 
     running = True
 
     while running:
-        """ Events """
+        # events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -212,23 +220,23 @@ def play(screen, bg, font, color, clock, start_time, fps):
                     running = False
                 if event.key == pygame.K_LEFT and direction != "right":
                     direction = "left"
-                    dx = -1
-                    dy = 0
+                    x_dir = -1
+                    y_dir = 0
                 if event.key == pygame.K_RIGHT and direction != "left":
                     direction = "right"
-                    dx = 1
-                    dy = 0
+                    x_dir = 1
+                    y_dir = 0
                 if event.key == pygame.K_UP and direction != "down":
                     direction = "up"
-                    dy = -1
-                    dx = 0
+                    y_dir = -1
+                    x_dir = 0
                 if event.key == pygame.K_DOWN and direction != "up":
                     direction = "down"
-                    dy = 1
-                    dx = 0
+                    y_dir = 1
+                    x_dir = 0
 
         # update player
-        player.move(dx, dy)
+        player.move(x_dir, y_dir)
 
         # get rectangle objects for collision check
         player_rect = player.get_rect()
@@ -254,7 +262,6 @@ def play(screen, bg, font, color, clock, start_time, fps):
 
         # every 3 seconds increase score and generate another food
         interval = pygame.time.get_ticks() - interval_start
-        print('time: ', interval)
         if interval > 3000:
             score += 1
             pos = food.generate_food()
@@ -262,8 +269,8 @@ def play(screen, bg, font, color, clock, start_time, fps):
                 food_list.append(pos)
             interval_start = pygame.time.get_ticks()
 
-        """ Draw """
-        screen.fill(bg)
+        # draw
+        screen.fill(background_color)
 
         # draw the player
         player.draw()
@@ -287,10 +294,12 @@ def play(screen, bg, font, color, clock, start_time, fps):
     return score
 
 def save_score(data_file, data):
+    """ Function saves the score into the data file """
     with open(data_file, 'wb') as file:
         pickle.dump(data, file)
 
 def read_score(data_file):
+    """ Function reads the data file, if empty return default data """
     if os.path.isfile(data_file):
         with open(data_file, 'rb') as file:
             data = pickle.load(file)

@@ -1,7 +1,14 @@
+#!/usr/bin/env python3
+""" Snake on the Next Level Game - Player File """
+
+__author__ = 'Stephen Lee'
+__email__ = 'stephenjonglee@csu.fullerton.edu'
+__maintainer__ = 'stephenjonglee'
+
 import pygame
 
 
-class Player(object):
+class Player():
     """ Player class """
 
     def __init__(self, screen, pos, speed, color):
@@ -23,13 +30,13 @@ class Player(object):
         """ Function gets the length of the player """
         return self._length
 
-    def move(self, x, y):
+    def move(self, x_pos, y_pos):
         """ Function moves the player """
-        dx = x * self._speed
-        dy = y * self._speed
+        x_dir = x_pos * self._speed
+        y_dir = y_pos * self._speed
 
-        self._x += dx
-        self._y += dy
+        self._x += x_dir
+        self._y += y_dir
 
         self._body.append((self._x, self._y))
 
@@ -51,7 +58,8 @@ class Player(object):
     def draw(self):
         """ Draws the snake body onto the game_display """
         rad = self._size / 2
-        pygame.draw.circle(self._screen, self._color, (self._body[-1][0] + rad, self._body[-1][1] + rad), rad)
+        pygame.draw.circle(self._screen, self._color,
+                           (self._body[-1][0] + rad, self._body[-1][1] + rad), rad)
 
         for part in self._body[:-1]:
             pygame.draw.rect(self._screen, self._color, (part[0], part[1], self._size, self._size))

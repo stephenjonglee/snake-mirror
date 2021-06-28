@@ -1,7 +1,14 @@
+#!/usr/bin/env python3
+""" Snake on the Next Level Game - Wall File """
+
+__author__ = 'Stephen Lee'
+__email__ = 'stephenjonglee@csu.fullerton.edu'
+__maintainer__ = 'stephenjonglee'
+
 import pygame
 
 
-class Wall(object):
+class Wall():
     """ Wall class """
 
     def __init__(self, screen, x, y, width, height, color):

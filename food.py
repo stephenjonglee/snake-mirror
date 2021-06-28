@@ -1,7 +1,14 @@
+#!/usr/bin/env python3
+""" Snake on the Next Level Game - Food File """
+
+__author__ = 'Stephen Lee'
+__email__ = 'stephenjonglee@csu.fullerton.edu'
+__maintainer__ = 'stephenjonglee'
+
 import random
 import pygame
 
-class Food(object):
+class Food():
     """ Food class """
 
     def __init__(self, screen, pos, color, size=10):
@@ -14,12 +21,12 @@ class Food(object):
 
     def generate_food(self):
         """ Function generate random location """
-        (w, h) = self._screen.get_size()
+        (width, height) = self._screen.get_size()
         cell_size = 10
         wall_size = 10
         buffer = 40
-        self._x = round(random.randrange(0 + wall_size + buffer, w - wall_size, cell_size))
-        self._y = round(random.randrange(0 + wall_size + buffer, h - wall_size, cell_size))
+        self._x = round(random.randrange(0 + wall_size + buffer, width - wall_size, cell_size))
+        self._y = round(random.randrange(0 + wall_size + buffer, height - wall_size, cell_size))
 
         return (self._x, self._y)
 
