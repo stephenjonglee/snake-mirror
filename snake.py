@@ -23,7 +23,7 @@ def main():
     # display the window
     screen = pygame.display.set_mode(size)
     bg = pygame.Color('black')
-    reset_screen(screen, bg)
+    screen.fill(bg)
 
     # caption title
     title = 'Snake on the Next Level'
@@ -32,7 +32,7 @@ def main():
     # text settings
     font = pygame.font.SysFont("Roboto", 35)
     color = pygame.Color('yellow')
-    score_color = pygame.Color('black')
+    score_color = pygame.Color('orange')
 
     # clock
     clock = pygame.time.Clock()
@@ -47,16 +47,18 @@ def main():
     # play loop
     again = True
 
-    start_screen(screen, font, color, clock)
-    reset_screen(screen, bg)
+    # start screen with rules and controls
+    start_screen(screen, bg, font, color, clock)
     while again:
+        # start time
         start_time = pygame.time.get_ticks()
-        score = play(screen, font, score_color, clock, fps)
+        # play the snake game
+        score = play(screen, bg, font, score_color, clock, start_time, fps)
+        # get the total time played
         time = pygame.time.get_ticks() - start_time
-        reset_screen(screen, bg)
-        again = end_screen(screen, font, color, clock, score, time, data_file)
-        reset_screen(screen, bg)
-    close_screen(screen, font, color, clock)
+        # end screen prompt to play again
+        again = end_screen(screen, bg, font, color, clock, score, time, data_file)
+    close_screen(screen, bg, font, color, clock)
 
     # quit pygame
     print('exiting')
@@ -64,11 +66,7 @@ def main():
     sys.exit()
 
 
-def reset_screen(screen, color):
-    screen.fill(color)
-
-
-def start_screen(screen, font, color, clock):
+def start_screen(screen, bg, font, color, clock):
     """ Function displays the start up screen """
     running = True
     while running:
@@ -79,6 +77,7 @@ def start_screen(screen, font, color, clock):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 running = False
+        screen.fill(bg)
         show_message(screen, "Rules: Don't eat yourself or hit the wall.", font, color, 200)
         show_message(screen, "You get a point for every 3 seconds", font, color, 245)
         show_message(screen, "or when you eat a food", font, color, 290)
@@ -89,7 +88,7 @@ def start_screen(screen, font, color, clock):
         clock.tick(15)
 
 
-def end_screen(screen, font, color, clock, score, time, data_file):
+def end_screen(screen, bg, font, color, clock, score, time, data_file):
     """ Function displays the start up screen """
     # get scores data
     scores = read_score(data_file)
@@ -110,6 +109,7 @@ def end_screen(screen, font, color, clock, score, time, data_file):
                 if event.key == pygame.K_n:
                     running = False
                     again = False
+        screen.fill(bg)
         show_message(screen, "Game Over.", font, color, 100)
         show_message(screen, f"You're score is {score}.", font, color, 200)
         show_message(screen, f"High score: {high_score['Score']}", font, color, 300)
@@ -130,7 +130,7 @@ def end_screen(screen, font, color, clock, score, time, data_file):
     return again
 
 
-def close_screen(screen, font, color, clock):
+def close_screen(screen, bg, font, color, clock):
     """ Function displays the start up screen """
     running = True
     while running:
@@ -141,6 +141,7 @@ def close_screen(screen, font, color, clock):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 running = False
+        screen.fill(bg)
         show_message(screen, "Thank You for playing!", font, color, 200)
         show_message(screen, "Please come again!", font, color, 400)
         show_message(screen, "Press any key to exit.", font, color, 600)
@@ -176,20 +177,23 @@ def create_walls(screen):
     return walls
 
 
-def play(screen, font, color, clock, fps):
+def play(screen, bg, font, color, clock, start_time, fps):
     """ Function play the game """
     # Game Settings
     direction = ''
     (w, h) = screen.get_size()
     player_pos = (200, 200)
-    player_color = pygame.Color('black')
+    player_color = pygame.Color('yellow')
     food_pos = (int(w / 2) - 10, int(h / 2) - 10)
-    food_color = pygame.Color('red')
+    food_color = pygame.Color('green')
     score = 0
+    interval_start = start_time
 
     # Initialize the game
     walls = create_walls(screen)
     player = Player(screen, player_pos, 5, player_color)
+    food_list = []
+    food_list.append(food_pos)
     food = Food(screen, food_pos, food_color)
 
     # Direction of the player
@@ -228,7 +232,6 @@ def play(screen, font, color, clock, fps):
 
         # get rectangle objects for collision check
         player_rect = player.get_rect()
-        food_rect = food.get_rect()
 
         # check if player ate itself
         if player.ate_itself():
@@ -241,19 +244,34 @@ def play(screen, font, color, clock, fps):
                 running = False
 
         # check if player ate a food
-        if food_rect.colliderect(player_rect):
-            score += 1
-            player.increment_length()
+        for pos in food_list:
+            food = Food(screen, pos, food_color)
+            food_rect = food.get_rect()
+            if food_rect.colliderect(player_rect):
+                score += 1
+                player.increment_length()
+                food_list.remove(pos)
 
-            # generate food at random x, y.
-            food.generate_food()
+        # every 3 seconds increase score and generate another food
+        interval = pygame.time.get_ticks() - interval_start
+        print('time: ', interval)
+        if interval > 3000:
+            score += 1
+            pos = food.generate_food()
+            if pos not in food_list:
+                food_list.append(pos)
+            interval_start = pygame.time.get_ticks()
 
         """ Draw """
-        screen.fill(pygame.Color('white'))
+        screen.fill(bg)
 
-        # draw the food and snake.
+        # draw the player
         player.draw()
-        food.draw()
+
+        # draw the list of food
+        for pos in food_list:
+            food = Food(screen, pos, food_color)
+            food.draw()
 
         # draw the blocks.
         for wall_block in walls:
