@@ -17,8 +17,9 @@ class Food(object):
         (w, h) = self._screen.get_size()
         cell_size = 10
         wall_size = 10
-        self._x = round(random.randrange(0 + wall_size, w - wall_size, cell_size))
-        self._y = round(random.randrange(0 + wall_size, h - wall_size, cell_size))
+        buffer = 40
+        self._x = round(random.randrange(0 + wall_size + buffer, w - wall_size, cell_size))
+        self._y = round(random.randrange(0 + wall_size + buffer, h - wall_size, cell_size))
 
         return (self._x, self._y)
 
